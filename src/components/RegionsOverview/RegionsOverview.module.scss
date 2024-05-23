@@ -1,0 +1,20 @@
+.labelInputContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.labelInputContainer input {
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  background-color: aliceblue;
+  color: black;
+  padding: 10px;
+}
+
+.deleteButton {
+  background-color: transparent;
+  border-radius: 0.25rem;
+  border: 2px solid red;
+  padding: 5px;
+  cursor: pointer;
+}
