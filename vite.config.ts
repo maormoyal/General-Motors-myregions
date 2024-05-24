@@ -7,10 +7,10 @@ export default defineConfig({
   server: {
     proxy: {
       // Proxying requests for images
-      '/api/images': {
+      '/api': {
         target: 'https://myregions.azurewebsites.net',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/images/, ''),
+        rewrite: (path) => path.replace(/^\/api\//, ''),
       },
     },
   },

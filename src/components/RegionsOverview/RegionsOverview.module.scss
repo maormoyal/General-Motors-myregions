@@ -1,3 +1,13 @@
+.imgCanvasContainer {
+  width: 80%;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  canvas {
+    max-width: 100%;
+  }
+}
+
 .labelInputContainer {
   display: flex;
   flex-direction: column;
@@ -17,4 +27,12 @@
   border: 2px solid red;
   padding: 5px;
   cursor: pointer;
+}
+
+.buttonsContainer {
+  width: 100%;
+  display: flex;
+  justify-content: start;
+  margin: 20px;
+  gap: 10px;
 }

@@ -1,0 +1,40 @@
+.regionsListContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  width: 15%;
+  min-width: 200px;
+  height: 100vh;
+  min-height: 100vh;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  position: sticky;
+  top: 0;
+  padding: 20px;
+  gap: 10px;
+}
+
+.regionItem {
+  width: 200px;
+  min-width: 200px;
+  height: 200px;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  max-width: 100%;
+  border: 1px solid #ccc;
+  cursor: pointer;
+
+  &.selected {
+    border: 2px solid blue;
+  }
+
+  img {
+    width: auto;
+  }
+}
+
+.addImgBtn {
+  width: 100%;
+}

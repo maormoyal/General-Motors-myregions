@@ -1,17 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
+import { IRectangle } from '../../App';
 
 import styles from './RegionsOverview.module.scss';
 
-interface Rectangle {
-  id: number;
-  label: string;
-  points: number[];
-}
-
 interface RegionsOverviewProps {
   imgSrc: string;
-  initialRectangles?: Rectangle[];
+  initialRectangles?: IRectangle[];
+}
+
+interface Rectangle extends IRectangle {
+  deleteButtonPosition?: { left: number; top: number };
+  labelInputPosition?: { left: number; top: number };
 }
 
 const RegionsOverview: React.FC<RegionsOverviewProps> = ({
@@ -26,6 +26,15 @@ const RegionsOverview: React.FC<RegionsOverviewProps> = ({
   const [selectedRectIndex, setSelectedRectIndex] = useState<number | null>(
     null
   );
+  const [deleteButtonPosition, setDeleteButtonPosition] = useState<{
+    left: number;
+    top: number;
+  } | null>(null);
+  const [labelInputPosition, setLabelInputPosition] = useState<{
+    left: number;
+    top: number;
+  } | null>(null);
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
   const labelInputRef = useRef<HTMLInputElement | null>(null);
@@ -69,6 +78,19 @@ const RegionsOverview: React.FC<RegionsOverviewProps> = ({
         currentRect[3] - currentRect[1]
       );
       ctx.stroke();
+
+      // Display the coordinates of the current rectangle
+      ctx.fillStyle = 'blue';
+      ctx.fillText(
+        `(${currentRect[0].toFixed(2)}, ${currentRect[1].toFixed(2)})`,
+        currentRect[0],
+        currentRect[1] - 20
+      );
+      ctx.fillText(
+        `(${currentRect[2].toFixed(2)}, ${currentRect[3].toFixed(2)})`,
+        currentRect[2],
+        currentRect[3] + 20
+      );
     }
   };
 
@@ -85,6 +107,16 @@ const RegionsOverview: React.FC<RegionsOverviewProps> = ({
     }
   }, [inputVisible]);
 
+  const calculateDeleteButtonPosition = (rect: Rectangle) => ({
+    left: (rect.points[0] + rect.points[2]) / 2,
+    top: (rect.points[1] + rect.points[3]) / 2,
+  });
+
+  const calculateLabelInputPosition = (rect: Rectangle) => ({
+    left: rect.points[0] + 10,
+    top: rect.points[1] - 30,
+  });
+
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = canvasRef.current!.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -99,14 +131,20 @@ const RegionsOverview: React.FC<RegionsOverviewProps> = ({
         y <= rect.points[3]
       ) {
         setSelectedRectIndex(index);
+        setDeleteButtonPosition(calculateDeleteButtonPosition(rect));
+        setLabelInputPosition(calculateLabelInputPosition(rect));
         insideExistingRect = true;
+        setDrawing(false);
+        setInputVisible(false);
       }
     });
 
-    if (!insideExistingRect && !inputVisible) {
+    if (!insideExistingRect) {
       setCurrentRect([x, y, x, y]);
       setDrawing(true);
       setSelectedRectIndex(null); // Clear selected rectangle when starting a new one
+      setDeleteButtonPosition(null);
+      setLabelInputPosition(null);
     }
   };
 
@@ -123,34 +161,60 @@ const RegionsOverview: React.FC<RegionsOverviewProps> = ({
     if (drawing) {
       setDrawing(false);
       setInputVisible(true);
+      setLabelInputPosition({
+        left: Math.min(currentRect[0], currentRect[2]) + 10,
+        top: Math.min(currentRect[1], currentRect[3]) - 30,
+      });
     }
   };
 
   const handleLabelSubmit = () => {
     if (currentLabel.trim() !== '') {
-      setRectangles([
-        ...rectangles,
-        {
-          id: Math.floor(Math.random() * 1000),
-          label: currentLabel,
-          points: [
-            Math.min(currentRect[0], currentRect[2]),
-            Math.min(currentRect[1], currentRect[3]),
-            Math.max(currentRect[0], currentRect[2]),
-            Math.max(currentRect[1], currentRect[3]),
-          ],
-        },
-      ]);
+      const newRectangle: Rectangle = {
+        id: Math.floor(Math.random() * 1000),
+        label: currentLabel,
+        points: [
+          Math.min(currentRect[0], currentRect[2]),
+          Math.min(currentRect[1], currentRect[3]),
+          Math.max(currentRect[0], currentRect[2]),
+          Math.max(currentRect[1], currentRect[3]),
+        ],
+        deleteButtonPosition: calculateDeleteButtonPosition({
+          id: 0,
+          label: '',
+          points: currentRect,
+        }),
+        labelInputPosition: calculateLabelInputPosition({
+          id: 0,
+          label: '',
+          points: currentRect,
+        }),
+      };
+
+      setRectangles([...rectangles, newRectangle]);
       setCurrentRect([]);
       setCurrentLabel('');
       setInputVisible(false);
     }
   };
 
-  const handleDeleteRectangle = (index: number) => {
-    const updatedRectangles = rectangles.filter((_, i) => i !== index);
-    setRectangles(updatedRectangles);
+  const handleDeleteRectangle = () => {
+    if (selectedRectIndex !== null) {
+      const updatedRectangles = rectangles.filter(
+        (_, i) => i !== selectedRectIndex
+      );
+      setRectangles(updatedRectangles);
+      setSelectedRectIndex(null);
+      setDeleteButtonPosition(null);
+      setLabelInputPosition(null);
+    }
+  };
+
+  const handleDeleteAllRectangles = () => {
+    setRectangles([]);
     setSelectedRectIndex(null);
+    setDeleteButtonPosition(null);
+    setLabelInputPosition(null);
   };
 
   const onSaveRectangles = () => {
@@ -166,7 +230,16 @@ const RegionsOverview: React.FC<RegionsOverviewProps> = ({
   };
 
   return (
-    <div>
+    <div className={styles.imgCanvasContainer}>
+      <div className={styles.buttonsContainer}>
+        <button onClick={onSaveRectangles}>Save Rectangles</button>
+        <button
+          onClick={handleDeleteAllRectangles}
+          disabled={rectangles.length <= 0}
+        >
+          Delete All Rectangles
+        </button>
+      </div>
       <img
         ref={imageRef}
         src={imgSrc}
@@ -187,13 +260,13 @@ const RegionsOverview: React.FC<RegionsOverviewProps> = ({
         onMouseUp={handleMouseUp}
         style={{ border: '1px solid black' }}
       />
-      {inputVisible && (
+      {inputVisible && labelInputPosition && (
         <div
           className={styles.labelInputContainer}
           style={{
             position: 'absolute',
-            left: `${Math.min(currentRect[0], currentRect[2]) + 140}px`,
-            top: `${Math.min(currentRect[1], currentRect[3]) - 50}px`,
+            left: `${labelInputPosition.left}px`,
+            top: `${labelInputPosition.top}px`,
           }}
         >
           <input
@@ -207,16 +280,16 @@ const RegionsOverview: React.FC<RegionsOverviewProps> = ({
           <button onClick={handleLabelSubmit}>Submit Label</button>
         </div>
       )}
-      {rectangles.map((rect, index) => (
+      {deleteButtonPosition && (
         <button
-          key={index}
           className={`${styles.deleteButton}`}
           style={{
             position: 'absolute',
-            left: `${rect.points[2] + 150}px`,
-            top: `${rect.points[1] - 25}px`,
+            left: `${deleteButtonPosition.left}px`,
+            top: `${deleteButtonPosition.top}px`,
+            transform: 'translate(-50%, -50%)',
           }}
-          onClick={() => handleDeleteRectangle(index)}
+          onClick={handleDeleteRectangle}
         >
           <svg
             xmlns='http://www.w3.org/2000/svg'
@@ -231,8 +304,7 @@ const RegionsOverview: React.FC<RegionsOverviewProps> = ({
             />
           </svg>
         </button>
-      ))}
-      <button onClick={onSaveRectangles}>Save Rectangles</button>
+      )}
     </div>
   );
 };
