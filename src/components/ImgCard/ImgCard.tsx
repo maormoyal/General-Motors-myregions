@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './ImgCard.module.scss';
-import { IData } from '../../App';
+import { IData } from '../../types/types';
 
 import trashIcon from '../../assets/trash.icon.svg';
 

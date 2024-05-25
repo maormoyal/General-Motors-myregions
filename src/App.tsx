@@ -13,7 +13,7 @@ function App() {
   const [selectedImgRegions, setSelectedImgRegions] = useState<IRectangle[]>(
     []
   );
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const regionsCache = useState<Map<string, IRectangle[]>>(new Map())[0];
 
   useEffect(() => {
