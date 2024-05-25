@@ -4,6 +4,11 @@ import { IData } from '../../types/types';
 
 import trashIcon from '/trash.icon.svg';
 
+const API_BASE_URL =
+  import.meta.env.MODE === 'development'
+    ? '/api/get/image'
+    : 'https://gm-proxy-server-47c5e71ee6ae.herokuapp.com/api/get/image';
+
 interface ImgCardProps {
   item: IData;
   selectedImgId?: string;
@@ -27,7 +32,7 @@ const ImgCard: React.FC<ImgCardProps> = ({
         className={styles.imageContainer}
         onClick={() => handleSelectedImg(item)}
       >
-        <img src={`/api/get/image/${item.id}`} alt={`Image ${item.id}`} />
+        <img src={`${API_BASE_URL}/${item.id}`} alt={`Image ${item.id}`} />
       </div>
       <button
         className={styles.deleteBtn}
