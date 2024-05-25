@@ -5,8 +5,8 @@
   align-items: center;
   width: 15%;
   min-width: 200px;
-  height: 100vh;
-  min-height: 100vh;
+  height: 93dvh;
+  min-height: 93dvh;
   overflow-y: scroll;
   overflow-x: hidden;
   position: sticky;
@@ -19,16 +19,34 @@
   width: 200px;
   min-width: 200px;
   height: 200px;
+  min-height: 200px;
   display: flex;
   justify-content: center;
   overflow: hidden;
   max-width: 100%;
   border: 1px solid #ccc;
   cursor: pointer;
+  position: relative;
 
   &.selected {
-    border: 2px solid blue;
+    border: 3px solid rgb(10, 255, 10);
   }
+
+  .deleteBtn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+}
+
+.imageContainer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 
   img {
     width: auto;
@@ -36,5 +54,22 @@
 }
 
 .addImgBtn {
-  width: 100%;
+  width: 80%;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.4em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  line-height: inherit;
+  cursor: pointer;
+  transition: border-color 0.25s;
+  position: sticky;
+  top: 0px;
+  z-index: 1;
+
+  &:hover {
+    border-color: #646cff;
+  }
 }

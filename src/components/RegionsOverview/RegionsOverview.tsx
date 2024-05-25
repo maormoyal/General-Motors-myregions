@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
-import { IRectangle } from '../../App';
-
+import { IRectangle, IDataToSave } from '../../App';
 import styles from './RegionsOverview.module.scss';
 
 interface RegionsOverviewProps {
+  imgId: string;
   imgSrc: string;
   initialRectangles?: IRectangle[];
+  handleSaveRectangles: (dataToSave: IDataToSave) => void;
 }
 
 interface Rectangle extends IRectangle {
@@ -15,8 +15,10 @@ interface Rectangle extends IRectangle {
 }
 
 const RegionsOverview: React.FC<RegionsOverviewProps> = ({
+  imgId,
   imgSrc,
   initialRectangles = [],
+  handleSaveRectangles,
 }) => {
   const [rectangles, setRectangles] = useState<Rectangle[]>(initialRectangles);
   const [currentRect, setCurrentRect] = useState<number[]>([]);
@@ -39,6 +41,10 @@ const RegionsOverview: React.FC<RegionsOverviewProps> = ({
   const imageRef = useRef<HTMLImageElement | null>(null);
   const labelInputRef = useRef<HTMLInputElement | null>(null);
 
+  useEffect(() => {
+    setRectangles(initialRectangles as Rectangle[]);
+  }, [initialRectangles]);
+
   const drawRectangles = (ctx: CanvasRenderingContext2D) => {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.drawImage(imageRef.current!, 0, 0);
@@ -51,22 +57,28 @@ const RegionsOverview: React.FC<RegionsOverviewProps> = ({
         rect.points[2] - rect.points[0],
         rect.points[3] - rect.points[1]
       );
-      ctx.strokeStyle = 'red';
+      ctx.strokeStyle = selectedRectIndex === index ? 'orange' : 'red';
       ctx.stroke();
 
-      ctx.font = 'bold 20px sans-serif'; // Set custom font size, family, and weight
-      ctx.fillStyle = 'orange'; // Set custom font color
-      ctx.fillText(rect.label, rect.points[0], rect.points[1] - 5);
+      ctx.font = 'bold 20px sans-serif';
+      const textWidth = ctx.measureText(rect.label).width;
+      const textHeight = 20; // Approximate text height
+      const padding = 4;
 
-      // Highlight the selected rectangle with a different color
-      if (selectedRectIndex === index) {
-        ctx.strokeStyle = 'orange';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-      }
+      // Draw background rectangle for the label
+      ctx.fillStyle = 'rgba(255, 165, 0, 0.8)'; // Background color with some opacity
+      ctx.fillRect(
+        rect.points[0],
+        rect.points[1] - textHeight - padding,
+        textWidth + padding * 2,
+        textHeight + padding
+      );
+
+      // Draw label text
+      ctx.fillStyle = 'black'; // Text color
+      ctx.fillText(rect.label, rect.points[0] + padding, rect.points[1] - 5);
     });
 
-    // Draw the current rectangle being drawn
     if (currentRect.length === 4) {
       ctx.beginPath();
       ctx.lineWidth = 5;
@@ -79,17 +91,49 @@ const RegionsOverview: React.FC<RegionsOverviewProps> = ({
       );
       ctx.stroke();
 
-      // Display the coordinates of the current rectangle
-      ctx.fillStyle = 'blue';
-      ctx.fillText(
-        `(${currentRect[0].toFixed(2)}, ${currentRect[1].toFixed(2)})`,
+      ctx.font = '15px sans-serif'; // Set custom font size and family
+      const textHeight = 15; // Approximate text height
+      const padding = 4;
+
+      const coordText1 = `(${currentRect[0].toFixed(
+        2
+      )}, ${currentRect[1].toFixed(2)})`;
+      const coordText2 = `(${currentRect[2].toFixed(
+        2
+      )}, ${currentRect[3].toFixed(2)})`;
+
+      // Measure text width
+      const coordText1Width = ctx.measureText(coordText1).width;
+      const coordText2Width = ctx.measureText(coordText2).width;
+
+      // Draw background rectangle for the first coordinate
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'; // Background color with some opacity
+      ctx.fillRect(
         currentRect[0],
-        currentRect[1] - 20
+        currentRect[1] - textHeight - padding,
+        coordText1Width + padding * 2,
+        textHeight + padding
       );
-      ctx.fillText(
-        `(${currentRect[2].toFixed(2)}, ${currentRect[3].toFixed(2)})`,
+
+      // Draw the first coordinate text
+      ctx.fillStyle = 'white'; // Text color
+      ctx.fillText(coordText1, currentRect[0] + padding, currentRect[1] - 5);
+
+      // Draw background rectangle for the second coordinate
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'; // Background color with some opacity
+      ctx.fillRect(
         currentRect[2],
-        currentRect[3] + 20
+        currentRect[3] + padding,
+        coordText2Width + padding * 2,
+        textHeight + padding
+      );
+
+      // Draw the second coordinate text
+      ctx.fillStyle = 'white'; // Text color
+      ctx.fillText(
+        coordText2,
+        currentRect[2] + padding,
+        currentRect[3] + textHeight + padding
       );
     }
   };
@@ -107,16 +151,6 @@ const RegionsOverview: React.FC<RegionsOverviewProps> = ({
     }
   }, [inputVisible]);
 
-  const calculateDeleteButtonPosition = (rect: Rectangle) => ({
-    left: (rect.points[0] + rect.points[2]) / 2,
-    top: (rect.points[1] + rect.points[3]) / 2,
-  });
-
-  const calculateLabelInputPosition = (rect: Rectangle) => ({
-    left: rect.points[0] + 10,
-    top: rect.points[1] - 30,
-  });
-
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = canvasRef.current!.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -131,8 +165,14 @@ const RegionsOverview: React.FC<RegionsOverviewProps> = ({
         y <= rect.points[3]
       ) {
         setSelectedRectIndex(index);
-        setDeleteButtonPosition(calculateDeleteButtonPosition(rect));
-        setLabelInputPosition(calculateLabelInputPosition(rect));
+        setDeleteButtonPosition({
+          left: rect.points[2] - 20, // Adjust this value as needed
+          top: rect.points[1] + 10, // Adjust this value as needed
+        });
+        setLabelInputPosition({
+          left: rect.points[0] + 10,
+          top: rect.points[1] - 30,
+        });
         insideExistingRect = true;
         setDrawing(false);
         setInputVisible(false);
@@ -142,7 +182,7 @@ const RegionsOverview: React.FC<RegionsOverviewProps> = ({
     if (!insideExistingRect) {
       setCurrentRect([x, y, x, y]);
       setDrawing(true);
-      setSelectedRectIndex(null); // Clear selected rectangle when starting a new one
+      setSelectedRectIndex(null);
       setDeleteButtonPosition(null);
       setLabelInputPosition(null);
     }
@@ -179,16 +219,6 @@ const RegionsOverview: React.FC<RegionsOverviewProps> = ({
           Math.max(currentRect[0], currentRect[2]),
           Math.max(currentRect[1], currentRect[3]),
         ],
-        deleteButtonPosition: calculateDeleteButtonPosition({
-          id: 0,
-          label: '',
-          points: currentRect,
-        }),
-        labelInputPosition: calculateLabelInputPosition({
-          id: 0,
-          label: '',
-          points: currentRect,
-        }),
       };
 
       setRectangles([...rectangles, newRectangle]);
@@ -218,15 +248,12 @@ const RegionsOverview: React.FC<RegionsOverviewProps> = ({
   };
 
   const onSaveRectangles = () => {
-    // axios
-    //   .post('/api/images/save/rectangles', rectangles)
-    //   .then((response) => {
-    //     console.log('Rectangles saved', response.data);
-    //   })
-    //   .catch((error) => {
-    //     console.error('There was an error saving the rectangles!', error);
-    //   });
-    console.log(rectangles);
+    const dataToSave: IDataToSave = {
+      id: imgId,
+      regions: rectangles,
+    };
+    handleSaveRectangles(dataToSave);
+    console.log(dataToSave);
   };
 
   return (
@@ -250,7 +277,7 @@ const RegionsOverview: React.FC<RegionsOverviewProps> = ({
           ctx.canvas.width = imageRef.current!.width;
           ctx.canvas.height = imageRef.current!.height;
           ctx.drawImage(imageRef.current!, 0, 0);
-          drawRectangles(ctx); // Draw initial rectangles on image load
+          drawRectangles(ctx);
         }}
       />
       <canvas
@@ -282,7 +309,7 @@ const RegionsOverview: React.FC<RegionsOverviewProps> = ({
       )}
       {deleteButtonPosition && (
         <button
-          className={`${styles.deleteButton}`}
+          className={styles.deleteButton}
           style={{
             position: 'absolute',
             left: `${deleteButtonPosition.left}px`,

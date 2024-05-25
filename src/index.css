@@ -66,3 +66,35 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* Total scrollbar area */
+::-webkit-scrollbar {
+  width: 8px; /* Width of the vertical scrollbar */
+  height: 8px; /* Height of the horizontal scrollbar */
+}
+
+/* Track or rail */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px; /* Rounded corners */
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Handle on active (when clicked) */
+::-webkit-scrollbar-thumb:active {
+  background: #333;
+}
+
+/* Optional: Customizing the corner when both horizontal and vertical scrollbars are present */
+::-webkit-scrollbar-corner {
+  background: #f1f1f1;
+}

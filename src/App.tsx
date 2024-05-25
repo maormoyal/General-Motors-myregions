@@ -1,21 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 import RegionsList from './components/RegionsList/RegionsList';
 import RegionsOverview from './components/RegionsOverview/RegionsOverview';
-
-const demoRectangles: IRectangle[] = [
-  {
-    id: 1,
-    label: 'region1',
-    points: [466.171875, 23, 590.171875, 147],
-  },
-  {
-    id: 2,
-    label: 'region2',
-    points: [114.171875, 417, 265.171875, 568],
-  },
-];
 
 export interface IData {
   id: string;
@@ -29,6 +18,11 @@ export interface IRectangle {
   points: number[];
 }
 
+export interface IDataToSave {
+  id: string;
+  regions: IRectangle[];
+}
+
 function App() {
   const [data, setData] = useState<IData[]>([]);
   const [selectedImg, setSelectedImg] = useState<IData | null>(null);
@@ -36,70 +30,169 @@ function App() {
     []
   );
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const regionsCache = useState<Map<string, IRectangle[]>>(new Map())[0];
 
   useEffect(() => {
-    setIsLoading(true);
-    axios
-      .get('/api/available-images-and-regions')
-      .then((response) => {
+    const fetchImagesAndRegions = async () => {
+      try {
+        const response = await axios.get('/api/available-images-and-regions');
         setData(response.data);
-        console.log('available-images-and-regions', response);
-      })
-      .catch((error) => {
-        console.error('There was an error fetching the rectangles!', error);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      } catch (error) {
+        console.error(
+          'There was an error fetching the images and regions!',
+          error
+        );
+      }
+    };
+    fetchImagesAndRegions();
   }, []);
 
   useEffect(() => {
-    if (data.length > 0) {
+    if (data.length > 0 && !selectedImg) {
       setSelectedImg(data[0]);
     }
-  }, [data]);
+  }, [data, selectedImg]);
 
-  const handleSelectedImg = useCallback(
-    (img: IData) => {
+  const fetchSelectedImageRegions = useCallback(
+    async (img: IData) => {
       setIsLoading(true);
-      setSelectedImg(img);
-
-      axios
-        .get(`/api/get/regions/${img.id}`)
-        .then((response) => {
-          setSelectedImgRegions(response.data);
-          console.log('Selected image regions>>', response.data);
-        })
-        .catch((error) => {
-          console.error('There was an error fetching the rectangles!', error);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
+      try {
+        const response = await axios.get(`/api/${img.regions}`);
+        regionsCache.set(img.id, response.data);
+        setSelectedImgRegions(response.data);
+      } catch (error) {
+        console.error('There was an error fetching the image regions!', error);
+      } finally {
+        setIsLoading(false);
+      }
     },
-    [setIsLoading, setSelectedImg, setSelectedImgRegions]
+    [regionsCache]
+  );
+
+  useEffect(() => {
+    if (selectedImg) {
+      const cachedRegions = regionsCache.get(selectedImg.id);
+      if (cachedRegions) {
+        setSelectedImgRegions(cachedRegions);
+        console.log(
+          `Using cached regions for image ${selectedImg.id}`,
+          cachedRegions
+        );
+      } else {
+        fetchSelectedImageRegions(selectedImg);
+        console.log(`Fetching regions for image ${selectedImg.id}`);
+      }
+    }
+  }, [selectedImg, fetchSelectedImageRegions, regionsCache]);
+
+  const handleSelectedImg = useCallback((img: IData) => {
+    console.log('Selecting image:', img);
+    setSelectedImg(img);
+  }, []);
+
+  const handleSaveRectangles = useCallback(
+    async (dataToSave: IDataToSave) => {
+      const formData = new FormData();
+      formData.append('id', dataToSave.id);
+      formData.append('regions', JSON.stringify(dataToSave.regions));
+
+      try {
+        const response = await axios.post('/api/update-regions', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        // Update the cache with the new regions
+        regionsCache.set(dataToSave.id, dataToSave.regions);
+        setSelectedImgRegions(dataToSave.regions);
+
+        toast.success('Regions saved successfully!');
+        return response;
+      } catch (error) {
+        console.error('There was an error updating the image regions!', error);
+        toast.error('Failed to save regions.');
+      }
+    },
+    [regionsCache]
+  );
+
+  const handleUploadImage = async (file: File, regions: IRectangle[]) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('regions', JSON.stringify(regions));
+
+    try {
+      const response = await axios.post('/api/post-image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      console.log('Full server response:', response);
+
+      const newImage: IData = {
+        id: response.data.id,
+        image: response.data.image, // Adjust to match the server response
+        regions: response.data.regions, // Adjust to match the server response
+      };
+
+      console.log('Uploaded new image:', newImage);
+
+      setData((prevData) => {
+        const updatedData = [newImage, ...prevData]; // Prepend the new image
+        return updatedData;
+      });
+
+      setSelectedImg(newImage); // Select the newly uploaded image
+      toast.success('Image uploaded successfully!');
+    } catch (error) {
+      console.error('There was an error uploading the image!', error);
+      toast.error('Failed to upload image.');
+    }
+  };
+
+  const handleDeleteImage = useCallback(
+    async (id: string) => {
+      try {
+        const response = await axios.get(`/api/delete/${id}`);
+
+        console.log('🚀 ~ response:', response);
+        if (response.status === 200) {
+          setData((prevData) => prevData.filter((img) => img.id !== id));
+          toast.success('Image deleted successfully!');
+          if (selectedImg?.id === id) {
+            setSelectedImg(null);
+            setSelectedImgRegions([]);
+          }
+        } else {
+          toast.error('Failed to delete image.');
+        }
+      } catch (error) {
+        console.error('There was an error deleting the image!', error);
+        toast.error('Failed to delete image.');
+      }
+    },
+    [selectedImg]
   );
 
   return (
     <div className='appContainer'>
-      {isLoading ? (
-        <div>
-          Loading... <br /> Please wait
-        </div>
-      ) : (
-        <>
-          <RegionsList
-            data={data}
-            selectedImgId={selectedImg?.id}
-            handleSelectedImg={handleSelectedImg}
-          />
-          {selectedImg && (
-            <RegionsOverview
-              imgSrc={`/api/${selectedImg.image}`}
-              initialRectangles={selectedImgRegions}
-            />
-          )}
-        </>
+      <ToastContainer />
+      <RegionsList
+        data={data}
+        selectedImgId={selectedImg?.id}
+        handleSelectedImg={handleSelectedImg}
+        handleUploadImage={handleUploadImage}
+        handleDeleteImage={handleDeleteImage} // Pass the delete handler to RegionsList
+      />
+      {selectedImg && (
+        <RegionsOverview
+          imgId={selectedImg.id}
+          imgSrc={`/api/${selectedImg.image}`}
+          initialRectangles={selectedImgRegions}
+          handleSaveRectangles={handleSaveRectangles}
+        />
       )}
     </div>
   );

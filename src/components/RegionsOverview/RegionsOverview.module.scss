@@ -1,8 +1,12 @@
 .imgCanvasContainer {
   width: 80%;
+  height: 93dvh;
+  overflow: hidden;
+  overflow-y: scroll;
   align-items: center;
   justify-content: center;
   position: relative;
+  padding: 20px 0;
   canvas {
     max-width: 100%;
   }
@@ -33,6 +37,21 @@
   width: 100%;
   display: flex;
   justify-content: start;
-  margin: 20px;
+  margin: 0 0 20px 30px;
   gap: 10px;
+  position: sticky;
+  top: 0px;
+}
+
+.loadingOverlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.8);
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 16px;
+  color: #000;
+  z-index: 10;
 }
