@@ -13,7 +13,6 @@ function App() {
   const [selectedImgRegions, setSelectedImgRegions] = useState<IRectangle[]>(
     []
   );
-
   const regionsCache = useState<Map<string, IRectangle[]>>(new Map())[0];
 
   useEffect(() => {
@@ -39,15 +38,12 @@ function App() {
 
   const fetchSelectedImageRegions = useCallback(
     async (img: IData) => {
-      setIsLoading(true);
       try {
         const response = await axios.get(`/api/${img.regions}`);
         regionsCache.set(img.id, response.data);
         setSelectedImgRegions(response.data);
       } catch (error) {
         console.error('There was an error fetching the image regions!', error);
-      } finally {
-        setIsLoading(false);
       }
     },
     [regionsCache]
