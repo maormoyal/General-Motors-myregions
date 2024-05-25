@@ -10,7 +10,7 @@ import { IData, IDataToSave, IRectangle } from './types/types';
 const API_BASE_URL =
   import.meta.env.MODE === 'development'
     ? '/api'
-    : import.meta.env.VITE_API_BASE_URL;
+    : 'https://gm-proxy-server-47c5e71ee6ae.herokuapp.com/api';
 
 function App() {
   const [data, setData] = useState<IData[]>([]);
