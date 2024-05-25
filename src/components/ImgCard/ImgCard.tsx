@@ -19,7 +19,6 @@ const ImgCard: React.FC<ImgCardProps> = ({
 }) => {
   return (
     <div
-      key={item.id}
       className={`${styles.imgCard} ${
         item.id === selectedImgId ? styles.selected : ''
       }`}

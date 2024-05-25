@@ -39,6 +39,7 @@ const ImgList: React.FC<ImgListProps> = ({
       </label>
       {data.map((item) => (
         <ImgCard
+          key={item.id}
           item={item}
           handleSelectedImg={handleSelectedImg}
           handleDeleteImage={handleDeleteImage}

@@ -7,6 +7,11 @@ import ImgList from './components/ImgList/ImgList';
 import ImgCanvas from './components/ImgCanvas/ImgCanvas';
 import { IData, IDataToSave, IRectangle } from './types/types';
 
+const API_BASE_URL =
+  import.meta.env.MODE === 'development'
+    ? '/api'
+    : import.meta.env.VITE_API_BASE_URL;
+
 function App() {
   const [data, setData] = useState<IData[]>([]);
   const [selectedImg, setSelectedImg] = useState<IData | null>(null);
@@ -18,7 +23,9 @@ function App() {
   useEffect(() => {
     const fetchImagesAndRegions = async () => {
       try {
-        const response = await axios.get('/api/available-images-and-regions');
+        const response = await axios.get(
+          `${API_BASE_URL}/available-images-and-regions`
+        );
         setData(response.data);
       } catch (error) {
         console.error(
@@ -39,7 +46,7 @@ function App() {
   const fetchSelectedImageRegions = useCallback(
     async (img: IData) => {
       try {
-        const response = await axios.get(`/api/${img.regions}`);
+        const response = await axios.get(`${API_BASE_URL}/${img.regions}`);
         regionsCache.set(img.id, response.data);
         setSelectedImgRegions(response.data);
       } catch (error) {
@@ -77,11 +84,15 @@ function App() {
       formData.append('regions', JSON.stringify(dataToSave.regions));
 
       try {
-        const response = await axios.post('/api/update-regions', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
+        const response = await axios.post(
+          `${API_BASE_URL}/update-regions`,
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        );
 
         // Update the cache with the new regions
         regionsCache.set(dataToSave.id, dataToSave.regions);
@@ -103,11 +114,15 @@ function App() {
     formData.append('regions', JSON.stringify(regions));
 
     try {
-      const response = await axios.post('/api/post-image', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await axios.post(
+        `${API_BASE_URL}/post-image`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
 
       console.log('Full server response:', response);
 
@@ -135,9 +150,8 @@ function App() {
   const handleDeleteImage = useCallback(
     async (id: string) => {
       try {
-        const response = await axios.get(`/api/delete/${id}`);
+        const response = await axios.get(`${API_BASE_URL}/delete/${id}`);
 
-        console.log('🚀 ~ response:', response);
         if (response.status === 200) {
           setData((prevData) => prevData.filter((img) => img.id !== id));
           toast.success('Image deleted successfully!');
@@ -169,7 +183,7 @@ function App() {
       {selectedImg && (
         <ImgCanvas
           imgId={selectedImg.id}
-          imgSrc={`/api/${selectedImg.image}`}
+          imgSrc={`${API_BASE_URL}/${selectedImg.image}`}
           initialRectangles={selectedImgRegions}
           handleSaveRectangles={handleSaveRectangles}
         />
