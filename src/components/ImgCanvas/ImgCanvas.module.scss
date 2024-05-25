@@ -1,0 +1,58 @@
+.imgCanvasContainer {
+  width: 85%;
+  min-width: 85%;
+  height: 93dvh;
+  overflow: hidden;
+  overflow-y: scroll;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 20px 0;
+  canvas {
+    max-width: 100%;
+  }
+}
+
+.labelInputContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.labelInputContainer input {
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  background-color: aliceblue;
+  color: black;
+  padding: 10px;
+}
+
+.deleteButton {
+  background-color: transparent;
+  border-radius: 0.25rem;
+  border: 2px solid red;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.buttonsContainer {
+  width: 100%;
+  display: flex;
+  justify-content: start;
+  margin: 0 0 20px 30px;
+  gap: 10px;
+  position: sticky;
+  top: 0px;
+}
+
+.loadingOverlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.8);
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 16px;
+  color: #000;
+  z-index: 10;
+}

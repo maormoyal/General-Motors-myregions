@@ -1,0 +1,13 @@
+#root {
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  font-family: sans-serif;
+  background-color: black;
+}
+
+.appContainer {
+  display: flex;
+  min-height: 100dvh;
+  justify-content: space-between;
+}
