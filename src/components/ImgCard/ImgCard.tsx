@@ -2,7 +2,7 @@ import React from 'react';
 import styles from './ImgCard.module.scss';
 import { IData } from '../../types/types';
 
-import trashIcon from '../../assets/trash.icon.svg';
+import trashIcon from '../../../public/trash.icon.svg';
 
 interface ImgCardProps {
   item: IData;

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { IRectangle, IDataToSave } from '../../types/types';
 
 import styles from './ImgCanvas.module.scss';
-import trashIcon from '../../assets/trash.icon.svg';
+import trashIcon from '../../../public/trash.icon.svg';
 
 interface ImgCanvasProps {
   imgId: string;
