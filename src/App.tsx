@@ -3,8 +3,8 @@ import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
-import RegionsList from './components/RegionsList/RegionsList';
-import RegionsOverview from './components/RegionsOverview/RegionsOverview';
+import ImgList from './components/ImgList/ImgList';
+import ImgCanvas from './components/ImgCanvas/ImgCanvas';
 
 export interface IData {
   id: string;
@@ -179,7 +179,7 @@ function App() {
   return (
     <div className='appContainer'>
       <ToastContainer />
-      <RegionsList
+      <ImgList
         data={data}
         selectedImgId={selectedImg?.id}
         handleSelectedImg={handleSelectedImg}
@@ -187,7 +187,7 @@ function App() {
         handleDeleteImage={handleDeleteImage} // Pass the delete handler to RegionsList
       />
       {selectedImg && (
-        <RegionsOverview
+        <ImgCanvas
           imgId={selectedImg.id}
           imgSrc={`/api/${selectedImg.image}`}
           initialRectangles={selectedImgRegions}

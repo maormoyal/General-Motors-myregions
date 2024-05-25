@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { IRectangle, IDataToSave } from '../../App';
-import styles from './RegionsOverview.module.scss';
 
-interface RegionsOverviewProps {
+import styles from './ImgCanvas.module.scss';
+import trashIcon from '../../assets/trash.icon.svg';
+
+interface ImgCanvasProps {
   imgId: string;
   imgSrc: string;
   initialRectangles?: IRectangle[];
@@ -14,7 +16,7 @@ interface Rectangle extends IRectangle {
   labelInputPosition?: { left: number; top: number };
 }
 
-const RegionsOverview: React.FC<RegionsOverviewProps> = ({
+const ImgCanvas: React.FC<ImgCanvasProps> = ({
   imgId,
   imgSrc,
   initialRectangles = [],
@@ -318,22 +320,11 @@ const RegionsOverview: React.FC<RegionsOverviewProps> = ({
           }}
           onClick={handleDeleteRectangle}
         >
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            viewBox='0 0 24 24'
-            width='24'
-            height='24'
-          >
-            <path fill='none' d='M0 0h24v24H0z' />
-            <path
-              fill='red'
-              d='M3 6h18v2H3V6zm2 0h1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v2h1V4a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v2zm0 3v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9H5zm4 10v-8h2v8H9zm4 0v-8h2v8h-2z'
-            />
-          </svg>
+          <img src={trashIcon} alt='trashIcon' />
         </button>
       )}
     </div>
   );
 };
 
-export default RegionsOverview;
+export default ImgCanvas;

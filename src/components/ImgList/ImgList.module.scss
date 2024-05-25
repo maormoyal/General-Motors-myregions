@@ -1,4 +1,4 @@
-.regionsListContainer {
+.imgListContainer {
   display: flex;
   flex-direction: column;
   justify-content: start;
@@ -13,44 +13,6 @@
   top: 0;
   padding: 20px;
   gap: 10px;
-}
-
-.regionItem {
-  width: 200px;
-  min-width: 200px;
-  height: 200px;
-  min-height: 200px;
-  display: flex;
-  justify-content: center;
-  overflow: hidden;
-  max-width: 100%;
-  border: 1px solid #ccc;
-  cursor: pointer;
-  position: relative;
-
-  &.selected {
-    border: 3px solid rgb(10, 255, 10);
-  }
-
-  .deleteBtn {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-  }
-}
-
-.imageContainer {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-
-  img {
-    width: auto;
-  }
 }
 
 .addImgBtn {
