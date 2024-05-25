@@ -1,0 +1,16 @@
+.skeletonImgListContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  width: 15%;
+  min-width: 200px;
+  height: 93dvh;
+  min-height: 93dvh;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  position: sticky;
+  top: 0;
+  padding: 20px;
+  gap: 10px;
+}

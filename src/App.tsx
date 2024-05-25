@@ -5,23 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 import ImgList from './components/ImgList/ImgList';
 import ImgCanvas from './components/ImgCanvas/ImgCanvas';
-
-export interface IData {
-  id: string;
-  image: string;
-  regions: string;
-}
-
-export interface IRectangle {
-  id: number;
-  label: string;
-  points: number[];
-}
-
-export interface IDataToSave {
-  id: string;
-  regions: IRectangle[];
-}
+import { IData, IDataToSave, IRectangle } from './types/types';
 
 function App() {
   const [data, setData] = useState<IData[]>([]);
@@ -133,18 +117,18 @@ function App() {
 
       const newImage: IData = {
         id: response.data.id,
-        image: response.data.image, // Adjust to match the server response
-        regions: response.data.regions, // Adjust to match the server response
+        image: response.data.image,
+        regions: response.data.regions,
       };
 
       console.log('Uploaded new image:', newImage);
 
       setData((prevData) => {
-        const updatedData = [newImage, ...prevData]; // Prepend the new image
+        const updatedData = [newImage, ...prevData];
         return updatedData;
       });
 
-      setSelectedImg(newImage); // Select the newly uploaded image
+      setSelectedImg(newImage);
       toast.success('Image uploaded successfully!');
     } catch (error) {
       console.error('There was an error uploading the image!', error);
@@ -184,7 +168,7 @@ function App() {
         selectedImgId={selectedImg?.id}
         handleSelectedImg={handleSelectedImg}
         handleUploadImage={handleUploadImage}
-        handleDeleteImage={handleDeleteImage} // Pass the delete handler to RegionsList
+        handleDeleteImage={handleDeleteImage}
       />
       {selectedImg && (
         <ImgCanvas
